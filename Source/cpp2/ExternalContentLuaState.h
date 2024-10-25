@@ -4,19 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "LuaState.h"
-#include "NewLuaState.generated.h"
+#include "ExternalContentLuaState.generated.h"
 
 
-/**
+ /**
  * 
  */
 UCLASS()
-class CPP2_API UNewLuaState : public ULuaState
+class CPP2_API UExternalContentLuaState : public ULuaState
 {
 	GENERATED_BODY()
 	
 public:
-	UNewLuaState();
+	UExternalContentLuaState();
 
 	UFUNCTION()
 	FLuaValue SetActorLocation(FLuaValue Actor, FLuaValue Location);

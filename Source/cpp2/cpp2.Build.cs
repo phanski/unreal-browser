@@ -12,7 +12,7 @@ public class cpp2 : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
 
 		// Custom
-		PublicDependencyModuleNames.AddRange(new string[] { "glTFRuntime", "LuaMachine", "WebSockets" });
+		PublicDependencyModuleNames.AddRange(new string[] { "glTFRuntime", "LuaMachine", "WebSockets", "HTTP"});
         //PublicDependencyModuleNames.Add();
         PrivateDependencyModuleNames.AddRange(new string[] {  });
 		//PublicIncludePaths.AddRange(new string[] { "RealtimeMeshComponent/Public", "RealtimeMeshComponent/Classes" });

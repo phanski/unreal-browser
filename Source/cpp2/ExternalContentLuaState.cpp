@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "NewLuaState.h"
+#include "ExternalContentLuaState.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "MyActor.h"
@@ -14,32 +14,27 @@
 #include "MyGameStateBase.h"
 #include "GameFramework/SpringArmComponent.h"
 
-UNewLuaState::UNewLuaState() {
+UExternalContentLuaState::UExternalContentLuaState() {
+	Table.Add("set_actor_location", FLuaValue::Function(GET_FUNCTION_NAME_CHECKED(UExternalContentLuaState, SetActorLocation)));
+	Table.Add("get_actor_location", FLuaValue::Function(GET_FUNCTION_NAME_CHECKED(UExternalContentLuaState, GetActorLocation)));
+	Table.Add("spawn_actor", FLuaValue::Function(GET_FUNCTION_NAME_CHECKED(UExternalContentLuaState, SpawnNewActor)));
+	Table.Add("spawn_actor_scene", FLuaValue::Function(GET_FUNCTION_NAME_CHECKED(UExternalContentLuaState, SpawnNewActorFull)));
+	Table.Add("delete_actor", FLuaValue::Function(GET_FUNCTION_NAME_CHECKED(UExternalContentLuaState, DeleteActor)));
 
-
-
-	this->LuaFilename = FString("lua/Custom/hello.lua");
-
-	Table.Add("set_actor_location", FLuaValue::Function(GET_FUNCTION_NAME_CHECKED(UNewLuaState, SetActorLocation)));
-	Table.Add("get_actor_location", FLuaValue::Function(GET_FUNCTION_NAME_CHECKED(UNewLuaState, GetActorLocation)));
-	Table.Add("spawn_actor", FLuaValue::Function(GET_FUNCTION_NAME_CHECKED(UNewLuaState, SpawnNewActor)));
-	Table.Add("spawn_actor_scene", FLuaValue::Function(GET_FUNCTION_NAME_CHECKED(UNewLuaState, SpawnNewActorFull)));
-	Table.Add("delete_actor", FLuaValue::Function(GET_FUNCTION_NAME_CHECKED(UNewLuaState, DeleteActor)));
-
-	Table.Add("get_actor", FLuaValue::Function(GET_FUNCTION_NAME_CHECKED(UNewLuaState, GetGlobalActor)));
-	Table.Add("spawn_orbit_camera", FLuaValue::Function(GET_FUNCTION_NAME_CHECKED(UNewLuaState, CreateOrbitCamera)));
-	Table.Add("preload_assets", FLuaValue::Function(GET_FUNCTION_NAME_CHECKED(UNewLuaState, PreloadAssets)));
-	Table.Add("on_key_down", FLuaValue::Function(GET_FUNCTION_NAME_CHECKED(UNewLuaState, AssignOnKeyPressedEvent)));
+	Table.Add("get_actor", FLuaValue::Function(GET_FUNCTION_NAME_CHECKED(UExternalContentLuaState, GetGlobalActor)));
+	Table.Add("spawn_orbit_camera", FLuaValue::Function(GET_FUNCTION_NAME_CHECKED(UExternalContentLuaState, CreateOrbitCamera)));
+	Table.Add("preload_assets", FLuaValue::Function(GET_FUNCTION_NAME_CHECKED(UExternalContentLuaState, PreloadAssets)));
+	Table.Add("on_key_down", FLuaValue::Function(GET_FUNCTION_NAME_CHECKED(UExternalContentLuaState, AssignOnKeyPressedEvent)));
 
 }
 
-FLuaValue UNewLuaState::GetGlobalActor(FLuaValue name)
+FLuaValue UExternalContentLuaState::GetGlobalActor(FLuaValue name)
 {
-	FLuaValue res = ULuaBlueprintFunctionLibrary::LuaGetGlobal(GetWorld(), UNewLuaState::StaticClass(), name.String);
+	FLuaValue res = ULuaBlueprintFunctionLibrary::LuaGetGlobal(GetWorld(), UExternalContentLuaState::StaticClass(), name.String);
 	return FLuaValue();
 }
 
-FLuaValue UNewLuaState::SetActorLocation(FLuaValue Actor, FLuaValue Location) 
+FLuaValue UExternalContentLuaState::SetActorLocation(FLuaValue Actor, FLuaValue Location) 
 {
 	AActor* ActorObject = Cast<AActor>(Actor.Object);
 	if (ActorObject)
@@ -49,7 +44,7 @@ FLuaValue UNewLuaState::SetActorLocation(FLuaValue Actor, FLuaValue Location)
 	return FLuaValue();
 }
 
-FLuaValue UNewLuaState::GetActorLocation(FLuaValue Actor)
+FLuaValue UExternalContentLuaState::GetActorLocation(FLuaValue Actor)
 {
 	AActor* ActorObject = Cast<AActor>(Actor.Object);
 	if (ActorObject)
@@ -68,7 +63,7 @@ FLuaValue UNewLuaState::GetActorLocation(FLuaValue Actor)
 	return FLuaValue();
 }
 
-FLuaValue UNewLuaState::SpawnNewActor(FLuaValue Location, FLuaValue Scale, FLuaValue AssetName, FLuaValue ActorName)
+FLuaValue UExternalContentLuaState::SpawnNewActor(FLuaValue Location, FLuaValue Scale, FLuaValue AssetName, FLuaValue ActorName)
 {
 	FglTFRuntimeConfig config = FglTFRuntimeConfig();
 
@@ -94,7 +89,7 @@ FLuaValue UNewLuaState::SpawnNewActor(FLuaValue Location, FLuaValue Scale, FLuaV
 			class ULuaGlobalNameComponent* globalName = NewObject<ULuaGlobalNameComponent>(pActor, ULuaGlobalNameComponent::StaticClass(), TEXT("GlobalName"));
 			pActor->AddOwnedComponent(globalName);
 			globalName->LuaGlobalName = FString(ActorName.String);
-			globalName->LuaState = UNewLuaState::StaticClass();
+			globalName->LuaState = UExternalContentLuaState::StaticClass();
 			globalName->RegisterComponent();
 
 			UGameplayStatics::FinishSpawningActor(pActor, trans);
@@ -107,7 +102,7 @@ FLuaValue UNewLuaState::SpawnNewActor(FLuaValue Location, FLuaValue Scale, FLuaV
 	return FLuaValue();
 }
 
-FLuaValue UNewLuaState::SpawnNewActorFull(FLuaValue Location, FLuaValue Scale, FLuaValue AssetName, FLuaValue ActorName)
+FLuaValue UExternalContentLuaState::SpawnNewActorFull(FLuaValue Location, FLuaValue Scale, FLuaValue AssetName, FLuaValue ActorName)
 {
 	FglTFRuntimeConfig config = FglTFRuntimeConfig();
 
@@ -125,7 +120,7 @@ FLuaValue UNewLuaState::SpawnNewActorFull(FLuaValue Location, FLuaValue Scale, F
 			class ULuaGlobalNameComponent* globalName = NewObject<ULuaGlobalNameComponent>(pActor, ULuaGlobalNameComponent::StaticClass(), TEXT("GlobalName"));
 			pActor->AddOwnedComponent(globalName);
 			globalName->LuaGlobalName = FString(ActorName.String);
-			globalName->LuaState = UNewLuaState::StaticClass();
+			globalName->LuaState = UExternalContentLuaState::StaticClass();
 			globalName->RegisterComponent();
 
 
@@ -142,7 +137,7 @@ FLuaValue UNewLuaState::SpawnNewActorFull(FLuaValue Location, FLuaValue Scale, F
 	return FLuaValue();
 }
 
-FLuaValue UNewLuaState::CreateOrbitCamera(FLuaValue Centre, FLuaValue Distance) {
+FLuaValue UExternalContentLuaState::CreateOrbitCamera(FLuaValue Centre, FLuaValue Distance) {
 	FVector move = LuaValueToBaseStruct<FVector>(Centre);
 
 	FTransform trans = FTransform(FVector(move.X,move.Y,move.Z));
@@ -160,7 +155,7 @@ FLuaValue UNewLuaState::CreateOrbitCamera(FLuaValue Centre, FLuaValue Distance) 
 	return FLuaValue();
 }
 
-FLuaValue UNewLuaState::DeleteActor(FLuaValue Actor) 
+FLuaValue UExternalContentLuaState::DeleteActor(FLuaValue Actor) 
 {
 	AActor* actor = Cast<AActor>(Actor.Object);
 	if (actor) {
@@ -169,7 +164,7 @@ FLuaValue UNewLuaState::DeleteActor(FLuaValue Actor)
 	return FLuaValue();
 }
 
-TWeakObjectPtr<UglTFRuntimeAsset> UNewLuaState::LoadglTFAsset(FString assetPath) {
+TWeakObjectPtr<UglTFRuntimeAsset> UExternalContentLuaState::LoadglTFAsset(FString assetPath) {
 	FglTFRuntimeConfig config = FglTFRuntimeConfig();
 
 	if (glTFCache.Contains(assetPath)) {
@@ -203,7 +198,7 @@ TWeakObjectPtr<UglTFRuntimeAsset> UNewLuaState::LoadglTFAsset(FString assetPath)
 	return gltfAsset;
 }
 
-FLuaValue UNewLuaState::PreloadAssets(TArray<FLuaValue> Assets) {
+FLuaValue UExternalContentLuaState::PreloadAssets(TArray<FLuaValue> Assets) {
 	for (int i = 0; i < Assets.Num(); i++) {
 		LoadglTFAsset(Assets[i].String);
 	}
@@ -211,18 +206,17 @@ FLuaValue UNewLuaState::PreloadAssets(TArray<FLuaValue> Assets) {
 	return FLuaValue();
 }
 
-FLuaValue UNewLuaState::AssignOnKeyPressedEvent(FLuaValue KeyName, FLuaValue Callback) {
+FLuaValue UExternalContentLuaState::AssignOnKeyPressedEvent(FLuaValue KeyName, FLuaValue Callback) {
 	OnKeyDownCallbacks.Add(FKey(FName(KeyName.String)), AddLuaSmartReference(Callback));
 
-	GetWorld()->GetFirstPlayerController()->InputComponent->BindKey(FKey(FName(KeyName.String)), EInputEvent::IE_Pressed, this, &UNewLuaState::OnKeyDownCallback);
+	GetWorld()->GetFirstPlayerController()->InputComponent->BindKey(FKey(FName(KeyName.String)), EInputEvent::IE_Pressed, this, &UExternalContentLuaState::OnKeyDownCallback);
 	return FLuaValue();
 	
 }
 
-void UNewLuaState::OnKeyDownCallback(FKey key) {
+void UExternalContentLuaState::OnKeyDownCallback(FKey key) {
 	if (OnKeyDownCallbacks.Contains(key)) {
 		TArray<FLuaValue> Args = { FLuaValue(this), FLuaValue("Message") };
 		ULuaBlueprintFunctionLibrary::LuaValueCallIfNotNil(TWeakPtr<FLuaSmartReference>(OnKeyDownCallbacks[key]).Pin()->Value, Args);
 	}
-
 }

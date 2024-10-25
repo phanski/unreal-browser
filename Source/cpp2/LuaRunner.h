@@ -16,6 +16,8 @@ public:
 	// Sets default values for this component's properties
 	ULuaRunner();
 
+	UFUNCTION()
+	FLuaValue OnInitComplete();
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

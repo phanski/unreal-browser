@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "LuaWebsocketConnection.h"
+#include "LuaCModules/LuaWebsocketConnection.h"
 #include "LuaBlueprintFunctionLibrary.h"
 #include "WebSocketsModule.h"
 

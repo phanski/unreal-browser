@@ -5,7 +5,8 @@
 //#include "LuaMachine.h"
 #include "LuaState.h"
 #include "LuaMachine/Public/LuaBlueprintFunctionLibrary.h"
-#include "NewLuaState.h"
+#include "ExternalContentLuaState.h"
+#include "LuaInitialLoaderStateBase.h"
 #include "MyGameStateBase.h"
 
 
@@ -22,17 +23,10 @@ ULuaRunner::ULuaRunner()
 }
 
 
-// Called when the game starts
 void ULuaRunner::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	//FLuaValue result = ULuaBlueprintFunctionLibrary::LuaRunFile(GetWorld(), UNewLuaState::StaticClass(), FString("hello.lua"), false);
-	//GEngine->AddOnScreenDebugMessage(-1, 200, FColor::Red, result.String);
-
-	//ULuaBlueprintFunctionLibrary::LuaSetGlobal(GetWorld(), UNewLuaState::StaticClass(), FString("OrbitCamera"), FLuaValue(this->OrbitCamera->StaticClass()));
-	
-
 
 	FString urlValue;
 
@@ -40,17 +34,51 @@ void ULuaRunner::BeginPlay()
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 200, FColor::Red, urlValue);
 	}
-	//TArray<FLuaValue> inp = TArray<FLuaValue>();
-	//inp.Empty();
-	
-	//GEngine->AddOnScreenDebugMessage(-1, 200, FColor::Red, res2.String);
-	TArray<FLuaValue> inp = TArray<FLuaValue>();
-	//inp.Add(FLuaValue(this->GetOwner())`);
-	//ULuaBlueprintFunctionLibrary::LuaGlobalCall(GetWorld(), UNewLuaState::StaticClass(), FString("spawn"), inp);
-	ULuaBlueprintFunctionLibrary::LuaGlobalCall(GetWorld(), UNewLuaState::StaticClass(), FString("Main"), inp);
-	//ULuaBlueprintFunctionLibrary::LuaGlobalCall(GetWorld(), UNewLuaState::StaticClass(), FString("spawncamera"), inp);
+
+	UWorld* world = GetWorld();
+	FLuaValue InitSuccessful = ULuaBlueprintFunctionLibrary::LuaRunFile(
+		world, 
+		ULuaInitialLoaderStateBase::StaticClass(), 
+		FString("lua/init.lua"), 
+		false
+	);
+
+	if (!InitSuccessful.Bool) {
+		UE_LOG(LogTemp, Display, TEXT("Failed to load Lua init file"));
+
+		//TODO Add on screen error alerting user to failed init
+		return;
+	}
+
+	ULuaBlueprintFunctionLibrary::LuaGlobalCall(
+		world, 
+		ULuaInitialLoaderStateBase::StaticClass(), 
+		FString("Main"), 
+		TArray<FLuaValue> { FLuaValue::FunctionOfObject(this, FName("OnInitComplete")) }
+	);
+}
 
 
+FLuaValue ULuaRunner::OnInitComplete()
+{
+	UWorld* world = GetWorld();
+	FLuaValue FoundExternalMain = ULuaBlueprintFunctionLibrary::LuaRunFile(
+		world, 
+		UExternalContentLuaState::StaticClass(), 
+		FString("lua/External/Main.lua"), 
+		false
+	);
+
+	if (!FoundExternalMain.Bool)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Failed to pass control to external content"));
+
+		//TODO Add on screen error alerting user to failed init
+		return FLuaValue();
+	}
+
+	ULuaBlueprintFunctionLibrary::LuaGlobalCall(world, UExternalContentLuaState::StaticClass(), FString("Main"), TArray<FLuaValue>());
+	return FLuaValue();
 }
 
 
