@@ -3,29 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "LuaState.h"
+#include "CustomLuaStateBase.h"
 #include "LuaInitialLoaderStateBase.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class CPP2_API ULuaInitialLoaderStateBase : public ULuaState
+class CPP2_API ULuaInitialLoaderStateBase : public UCustomLuaStateBase
 {
     GENERATED_BODY()
 public:
     ULuaInitialLoaderStateBase();
-
-    UFUNCTION()
-    FLuaValue GetCModuleSingleton(FLuaValue ModuleName);
-
-    UFUNCTION()
-    FLuaValue GetLuaModule(FLuaValue ModuleName) const;
-
-protected:
-
-    UPROPERTY()
-    TMap<TSubclassOf<ULuaUserDataObject>, ULuaUserDataObject*> CModulePtrMap;
-    UPROPERTY()
-    TMap<FString, TSubclassOf<ULuaUserDataObject>> CModuleClassMap;
 };

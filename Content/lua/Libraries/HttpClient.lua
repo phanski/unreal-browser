@@ -2,6 +2,7 @@ httpmodule = {}
 
 local client = get_internal_module("http")
 
+
 function makeSync(asyncFn)
     return function(...)
         local result
